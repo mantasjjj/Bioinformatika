@@ -1,0 +1,6 @@
+[console_scripts]
+bio = biorun.__main__:run
+comm.py = biorun.scripts.comm:run
+fasta_filter.py = biorun.scripts.fasta_filter:run
+uniq.py = biorun.scripts.uniq:run
+
