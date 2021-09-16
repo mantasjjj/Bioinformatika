@@ -43,6 +43,31 @@ def find_codons(triplets):
 
 
 # 2. Kiekvienam stop kodonui parinkti toliausiai nuo jo esanti start kodoną (su salyga, kad tarp ju nera kito stop kodono)
+def find_farthest_codon_for_each_stop_codon(seq_record):
+    i = 0
+    codon_list = []
+    while i < len(seq_record):
+        if seq_record[i] == 'TAA' or seq_record[i] == 'TAG' or seq_record[i] == 'TGA':
+            start_pos = i
+            j = i + 1
+            end_pos = -1
+            while j < len(seq_record):
+                if seq_record[j] == 'ATG':
+                    end_pos = j
+                elif seq_record[j] == 'TAA' or seq_record[j] == 'TAG' or seq_record[j] == 'TGA':
+                    if end_pos != -1:
+                        codon_list.append(''.join(str(e) for e in seq_record[start_pos:end_pos + 1]))
+                    i = j
+                    break
+                j += 1
+        i += 1
+    return codon_list
+
+def find_farthest_starts(triplets):
+    starts = []
+    for triplet in triplets:
+        starts.append(find_farthest_codon_for_each_stop_codon(triplet))
+    return starts
 
 
 # 3. Atfiltruokite visus fragmentus ("tai butu baltymų koduojancios sekos"), kurie trumpesni nei 100 simbolių.
@@ -55,17 +80,22 @@ def find_shortest_codons(codons):
 
 
 if __name__ == '__main__':
-    record = SeqIO.read("data/bacterial3.fasta", "fasta")
+    record = SeqIO.read("data/bacterial4.fasta", "fasta")
 
     triplets = get_triplets(record.seq)
 
     # 1.
     codons = find_codons(triplets)
-    print("All codons in a sequence:")
+    print("1. All codons in a sequence:")
     codons = np.concatenate(codons)
-    print(codons)
+    # print(codons)
+
+    # 2.
+    print("2. Each stop codons farthest start codon")
+    farthest_start_codons = find_farthest_starts(triplets)
+    print(farthest_start_codons)
 
     # 3.
     shortest_codons = find_shortest_codons(codons)
-    print("Codons that have a length less than 100:")
+    print("3. Codons that have a length less than 100:")
     # print(shortest_codons)
