@@ -1,14 +1,12 @@
 import numpy as np
 from Bio import SeqIO
 from Bio.Data.CodonTable import unambiguous_dna_by_name
-import pandas as pd
 
 
 alphabet_list = []
 
 # 1. Pateiktoje sekoje fasta formatu surastu visas start ir stop kodonų poras, tarp kurių nebutu stop kodono (ir tiesioginei sekai ir jos reverse komplementui).
 # Susirandam visas imanomas kombinacijas is sekos
-from scipy.spatial import distance_matrix
 
 
 def get_triplets(seq):
@@ -92,6 +90,7 @@ def find_shortest_codons(codons):
 def find_codon_frequency(codon_list):
     standard_table = unambiguous_dna_by_name["Bacterial"]
     letters = standard_table.nucleotide_alphabet
+    alphabet_list = []
     for c1 in letters:
         for c2 in letters:
             for c3 in letters:
@@ -144,15 +143,21 @@ def print_distance_matrix(frequencies):
 
     data = frequencies[ids[0]]
 
-    print("********", end = ' ')
-    for i in data:
-        print(i, end=' ')
+    print("*******", end = ' ')
+    for i in ids:
+        print(i, end = ' ')
 
-    for i in range(0, 7):
+    for i in range(0,7):
         print("")
         print(ids[i], end = ' ')
-        for j in data:
-            print("%.2f" % frequencies[ids[i]][j], end = ' ')
+        for j in range(0, 7):
+            total_points = 0
+            for k in data:
+                points = frequencies[ids[i]][k] - frequencies[ids[j]][k]
+                if points < 0:
+                    points = points * (-1)
+                total_points += points
+            print("%.2f" % total_points, end = ' ')
 
 
 if __name__ == '__main__':
@@ -194,6 +199,8 @@ if __name__ == '__main__':
 
     print("Codon frequency matrix:")
     print_distance_matrix(codon_frequencies)
+
+    print("")
 
     print("Dicodon frequency matrix:")
     print_distance_matrix(dicodon_frequencies)
