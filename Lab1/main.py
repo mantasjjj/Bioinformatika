@@ -147,10 +147,10 @@ def print_distance_matrix(frequencies):
     for i in ids:
         print(i, end = ' ')
 
-    for i in range(0,7):
+    for i in range(0,8):
         print("")
         print(ids[i], end = ' ')
-        for j in range(0, 7):
+        for j in range(0, 8):
             total_points = 0
             for k in data:
                 points = frequencies[ids[i]][k] - frequencies[ids[j]][k]
