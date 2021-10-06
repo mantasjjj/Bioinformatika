@@ -20,8 +20,8 @@ def get_triplets(seq):
     return frames
 
 
-# Is sekos kombinacijos pasiemam kodonus, kurie prasideda ATG ir baigiasi TAA || TAG || TGA
-def find_codon(seq_record):
+# Is sekos kombinacijos pasiemam orfus, kurie prasideda ATG ir baigiasi TAA || TAG || TGA
+def find_orf(seq_record):
     i = 0
     codon_list = []
     while i < len(seq_record):
@@ -39,12 +39,11 @@ def find_codon(seq_record):
     return codon_list
 
 
-# Susirandam visus kodonus pagal seku kombinacijas
-def find_codons(triplets):
-    codons = []
+def find_orfs(triplets):
+    orfs = []
     for triplet in triplets:
-        codons.append(find_codon(triplet))
-    return codons
+        orfs.append(find_orf(triplet))
+    return orfs
 
 
 # 2. Kiekvienam stop kodonui parinkti toliausiai nuo jo esanti start kodoną (su salyga, kad tarp ju nera kito stop kodono)
@@ -77,17 +76,17 @@ def find_farthest_starts(triplets):
 
 
 # 3. Atfiltruokite visus fragmentus ("tai butu baltymų koduojancios sekos"), kurie trumpesni nei 100 simbolių.
-def find_shortest_codons(codons):
-    shortest_codons = []
-    for codon in codons:
-        if len(codon) < 100:
-            shortest_codons.append(codon)
-    return shortest_codons
+def find_longest_fragments(orfs):
+    longest_orfs = []
+    for orf in orfs:
+        if len(orf) > 100:
+            longest_orfs.append(orf)
+    return longest_orfs
 
 
 # 4. Parasykite funkcijas, kurios ivertintu kodonu ir dikodonu daznius(visi imanomi kodonai/dikodonai ir ju
 # atitinkamas daznis - gali buti nemazai nuliu, jei ju sekoje nerasite).
-def find_codon_frequency(codon_list):
+def find_codon_frequency(list):
     standard_table = unambiguous_dna_by_name["Bacterial"]
     letters = standard_table.nucleotide_alphabet
     alphabet_list = []
@@ -99,7 +98,7 @@ def find_codon_frequency(codon_list):
     codon_alphabet = dict.fromkeys(alphabet_list, 0.0)
 
     total = 0
-    for orf in codon_list:
+    for orf in list:
         codons_in_orf = [orf[i:i + 3] for i in range(0, len(orf), 3)]
         total += len(codons_in_orf)
         for codon in codons_in_orf:
@@ -109,7 +108,7 @@ def find_codon_frequency(codon_list):
     return codon_alphabet
 
 
-def find_dicodon_frequency(codon_list):
+def find_dicodon_frequency(list):
     standard_table = unambiguous_dna_by_name["Bacterial"]
     letters = standard_table.nucleotide_alphabet
     alphabet_list = []
@@ -124,7 +123,7 @@ def find_dicodon_frequency(codon_list):
     dicodon_alphabet = dict.fromkeys(alphabet_list, 0.0)
 
     total = 0
-    for orf in codon_list:
+    for orf in list:
         dicodons_in_orf = [orf[i:i + 6] for i in range(0, len(orf), 6)]
         total += len(dicodons_in_orf)
         for dicodon in dicodons_in_orf:
@@ -173,7 +172,7 @@ if __name__ == '__main__':
 
         print("****************************" + record.id + "***********************************")
         # 1.
-        codons = find_codons(triplets)
+        codons = find_orfs(triplets)
         # print("1. All codons in a sequence:")
         codons = np.concatenate(codons)
         # print(codons)
@@ -184,17 +183,17 @@ if __name__ == '__main__':
         # print(farthest_start_codons)
 
         # 3.
-        shortest_codons = find_shortest_codons(codons)
-        # print("3. Codons that have a length less than 100 symbols:")
-        # print(shortest_codons)
+        longest_fragments = find_longest_fragments(codons)
+        # print("3. Fragments that have a length more than 100 symbols:")
+        # print(longest_fragments)
 
         # 4.
         # print("4. Codon frequency (%):")
-        codon_frequencies[record.id] = find_codon_frequency(codons)
+        codon_frequencies[record.id] = find_codon_frequency(longest_fragments)
         # print(find_codon_frequency(codons))
 
         # print("4. Dicodon frequency (%):")
-        dicodon_frequencies[record.id] = find_dicodon_frequency(codons)
+        dicodon_frequencies[record.id] = find_dicodon_frequency(longest_fragments)
         # print(find_dicodon_frequency(codons))
 
     print("Codon frequency matrix:")
